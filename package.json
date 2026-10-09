@@ -1,0 +1,49 @@
+{
+  "name": "clinicslot-api",
+  "version": "1.0.0",
+  "description": "REST API for clinic appointment slot booking (Node.js, Express, PostgreSQL)",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "db:migrate": "prisma migrate deploy",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:generate": "prisma generate",
+    "db:seed": "node prisma/seed.js",
+    "db:push": "prisma db push",
+    "postinstall": "prisma generate",
+    "test": "jest --runInBand --forceExit",
+    "test:ci": "npm run test",
+    "run:local": "node scripts/run-local.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "express",
+    "postgresql",
+    "healthcare",
+    "appointments",
+    "rest-api"
+  ],
+  "author": "Gaurav Sahoo",
+  "license": "MIT",
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.6.0",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.6",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "postgres-memory-server": "^0.3.0",
+    "prisma": "^6.6.0",
+    "supertest": "^7.1.0"
+  }
+}

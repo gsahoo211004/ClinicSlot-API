@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: clinicslot
+          POSTGRES_PASSWORD: clinicslot
+          POSTGRES_DB: clinicslot
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U clinicslot -d clinicslot"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://clinicslot:clinicslot@localhost:5432/clinicslot?schema=public
+      JWT_SECRET: ci-test-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - run: npx prisma migrate deploy
+      - run: npm test

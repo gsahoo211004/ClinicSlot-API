@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  PATIENT
+  ADMIN
+}
+
+enum SlotStatus {
+  OPEN
+  BOOKED
+  CANCELLED
+}
+
+enum AppointmentStatus {
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+model User {
+  id           String        @id @default(uuid())
+  email        String        @unique
+  passwordHash String        @map("password_hash")
+  role         UserRole      @default(PATIENT)
+  createdAt    DateTime      @default(now()) @map("created_at")
+  appointments Appointment[]
+
+  @@map("users")
+}
+
+model Clinic {
+  id      String   @id @default(uuid())
+  name    String
+  city    String
+  doctors Doctor[]
+
+  @@index([city])
+  @@map("clinics")
+}
+
+model Doctor {
+  id        String             @id @default(uuid())
+  clinicId  String             @map("clinic_id")
+  name      String
+  specialty String
+  clinic    Clinic             @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  slots     AvailabilitySlot[]
+
+  @@index([clinicId])
+  @@map("doctors")
+}
+
+model AvailabilitySlot {
+  id        String             @id @default(uuid())
+  doctorId  String             @map("doctor_id")
+  startAt   DateTime           @map("start_at")
+  endAt     DateTime           @map("end_at")
+  status    SlotStatus         @default(OPEN)
+  doctor    Doctor             @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  appointment Appointment?
+
+  @@index([doctorId, startAt])
+  @@index([status])
+  @@map("availability_slots")
+}
+
+model Appointment {
+  id        String            @id @default(uuid())
+  slotId    String            @unique @map("slot_id")
+  userId    String            @map("user_id")
+  status    AppointmentStatus @default(CONFIRMED)
+  createdAt DateTime          @default(now()) @map("created_at")
+  slot      AvailabilitySlot  @relation(fields: [slotId], references: [id])
+  user      User              @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("appointments")
+}

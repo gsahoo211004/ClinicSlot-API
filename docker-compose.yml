@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: clinicslot-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: clinicslot
+      POSTGRES_PASSWORD: clinicslot
+      POSTGRES_DB: clinicslot
+    ports:
+      - '5432:5432'
+    volumes:
+      - clinicslot_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U clinicslot -d clinicslot']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    container_name: clinicslot-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgresql://clinicslot:clinicslot@db:5432/clinicslot?schema=public
+      JWT_SECRET: dev-secret-change-in-production
+      JWT_EXPIRES_IN: 7d
+    ports:
+      - '3000:3000'
+    command: sh -c "npx prisma migrate deploy && node prisma/seed.js && node src/server.js"
+
+volumes:
+  clinicslot_pg:
